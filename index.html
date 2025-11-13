@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pattern Recognition Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(30, 58, 138, 0.4);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .title-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #3b82f6;
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .subtitle {
+            color: #bfdbfe;
+            margin-top: 10px;
+            font-size: 1rem;
+        }
+
+        .club-name {
+            color: #93c5fd;
+            font-size: 0.875rem;
+            margin-top: 5px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: rgba(59, 130, 246, 0.2);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #93c5fd;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: #60a5fa;
+            text-shadow: 0 0 15px rgba(96, 165, 250, 0.6);
+        }
+
+        .difficulty-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .difficulty-badge.easy {
+            background: rgba(16, 185, 129, 0.3);
+            border: 2px solid #10b981;
+            color: #d1fae5;
+        }
+
+        .difficulty-badge.medium {
+            background: rgba(251, 191, 36, 0.3);
+            border: 2px solid #fbbf24;
+            color: #fef3c7;
+        }
+
+        .difficulty-badge.hard {
+            background: rgba(239, 68, 68, 0.3);
+            border: 2px solid #ef4444;
+            color: #fecaca;
+        }
+
+        .difficulty-badge.expert {
+            background: rgba(168, 85, 247, 0.3);
+            border: 2px solid #a855f7;
+            color: #e9d5ff;
+        }
+
+        .pattern-display {
+            background: rgba(30, 58, 138, 0.3);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pattern-sequence {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pattern-item {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: rgba(59, 130, 246, 0.3);
+            border: 2px solid rgba(59, 130, 246, 0.5);
+            color: #bfdbfe;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .pattern-item.emoji {
+            font-size: 2.5rem;
+        }
+
+        .pattern-item.question {
+            background: rgba(96, 165, 250, 0.4);
+            border: 2px dashed rgba(96, 165, 250, 0.6);
+            font-size: 2.5rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .question-text {
+            text-align: center;
+            font-size: 1.125rem;
+            color: #bfdbfe;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option-button {
+            padding: 25px;
+            background: rgba(30, 58, 138, 0.3);
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            border-radius: 15px;
+            color: #bfdbfe;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option-button:hover {
+            background: rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .option-button.correct {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: #10b981;
+            animation: correctPulse 0.5s;
+        }
+
+        .option-button.wrong {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: #ef4444;
+            animation: shake 0.5s;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .message-box {
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 2px solid;
+            font-size: 1.125rem;
+            font-weight: 600;
+            display: none;
+        }
+
+        .message-box.show {
+            display: block;
+        }
+
+        .message-box.success {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.2);
+            color: #d1fae5;
+        }
+
+        .message-box.error {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.2);
+            color: #fecaca;
+        }
+
+        .message-box.game-over {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.2);
+            color: #bfdbfe;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            flex: 1;
+            padding: 18px 40px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 1.125rem;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .hint-box {
+            background: rgba(251, 191, 36, 0.2);
+            border: 2px solid rgba(251, 191, 36, 0.4);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #fef3c7;
+            font-size: 0.95rem;
+            display: none;
+        }
+
+        .hint-box.show {
+            display: block;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .pattern-lives {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #bfdbfe;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title-container">
+                <span style="font-size: 2.5rem">🧩</span>
+                <h1>Pattern Recognition</h1>
+                <span style="font-size: 2.5rem">🧩</span>
+            </div>
+            <p class="subtitle">Find the pattern and predict what comes next!</p>
+            <p class="club-name">STCB Code Unity Club</p>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-box">
+                <div class="stat-label">Pattern</div>
+                <div class="stat-value" id="patternNumber">1</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Score</div>
+                <div class="stat-value" id="score">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Streak</div>
+                <div class="stat-value" id="streak">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Best</div>
+                <div class="stat-value" id="bestScore">0</div>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <span class="difficulty-badge" id="difficultyBadge">EASY</span>
+        </div>
+
+        <div class="pattern-lives" id="patternLives">❤️ ❤️ ❤️</div>
+
+        <div class="hint-box" id="hintBox"></div>
+
+        <div class="pattern-display">
+            <div class="pattern-sequence" id="patternSequence"></div>
+        </div>
+
+        <div class="question-text" id="questionText">What comes next?</div>
+
+        <div class="message-box" id="messageBox"></div>
+
+        <div class="options-container" id="optionsContainer"></div>
+
+        <div class="control-buttons">
+            <button onclick="nextPattern()" id="nextButton" class="hidden">Next Pattern</button>
+            <button onclick="resetGame()" id="resetButton" class="hidden">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        let currentPatternNum = 1;
+        let score = 0;
+        let streak = 0;
+        let bestScore = 0;
+        let patternLives = 3;
+        let wrongAttempts = 0;
+        let currentPattern = null;
+        let isAnswered = false;
+
+        const patterns = [
+            // EASY PATTERNS (1-5)
+            { 
+                difficulty: 'easy', 
+                generate: () => {
+                    const start = Math.floor(Math.random() * 5) + 1;
+                    const seq = [start, start + 1, start + 2, start + 3];
+                    return { sequence: seq, answer: start + 4, hint: 'Adding 1 each time' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'easy', 
+                generate: () => {
+                    const start = Math.floor(Math.random() * 3) + 2;
+                    const seq = [start, start + 2, start + 4, start + 6];
+                    return { sequence: seq, answer: start + 8, hint: 'Adding 2 each time' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'easy', 
+                generate: () => {
+                    const start = Math.floor(Math.random() * 5) + 5;
+                    const seq = [start, start - 1, start - 2, start - 3];
+                    return { sequence: seq, answer: start - 4, hint: 'Subtracting 1 each time' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'easy', 
+                generate: () => {
+                    const emojis = ['🔴', '🔵', '🔴', '🔵'];
+                    return { sequence: emojis, answer: '🔴', hint: 'Red, Blue, Red, Blue...', options: ['🔴', '🔵', '🟢', '🟡'] };
+                },
+                type: 'emoji'
+            },
+            { 
+                difficulty: 'easy', 
+                generate: () => {
+                    const start = Math.floor(Math.random() * 3) + 1;
+                    const seq = [start, start + 3, start + 6, start + 9];
+                    return { sequence: seq, answer: start + 12, hint: 'Adding 3 each time' };
+                },
+                type: 'number'
+            },
+
+            // MEDIUM PATTERNS (6-12)
+            { 
+                difficulty: 'medium', 
+                generate: () => {
+                    const start = Math.floor(Math.random() * 3) + 2;
+                    const seq = [];
+                    for (let i = 0; i < 4; i++) {
+                        seq.push(start * Math.pow(2, i));
+                    }
+                    return { sequence: seq, answer: start * Math.pow(2, 4), hint: 'Multiplying by 2 each time' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'medium', 
+                generate: () => {
+                    const start = Math.floor(Math.random() * 3) + 1;
+                    const seq = [];
+                    for (let i = 0; i < 4; i++) {
+                        seq.push(Math.pow(start + i, 2));
+                    }
+                    return { sequence: seq, answer: Math.pow(start + 4, 2), hint: 'Square numbers (n²)' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'medium', 
+                generate: () => {
+                    const emojis = ['⭐', '⭐', '🌙', '⭐', '⭐'];
+                    return { sequence: emojis, answer: '🌙', hint: 'Two stars, then moon', options: ['⭐', '🌙', '☀️', '🌟'] };
+                },
+                type: 'emoji'
+            },
+            { 
+                difficulty: 'medium', 
+                generate: () => {
+                    const base = Math.floor(Math.random() * 3) + 2;
+                    const seq = [base, base + 3, base + 1, base + 4];
+                    return { sequence: seq, answer: base + 2, hint: 'Two alternating sequences: +0,+1,+2... and +3,+4,+5...' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'medium', 
+                generate: () => {
+                    const start = Math.floor(Math.random() * 5) + 1;
+                    const seq = [start, start * 2, start * 2 + 1, start * 4 + 2];
+                    return { sequence: seq, answer: start * 4 + 3, hint: 'Pattern: n, 2n, 2n+1, 4n+2...' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'medium', 
+                generate: () => {
+                    const seq = [1, 1, 2, 3];
+                    return { sequence: seq, answer: 5, hint: 'Each number = sum of previous two (Fibonacci)' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'medium', 
+                generate: () => {
+                    const emojis = ['🍎', '🍊', '🍊', '🍎', '🍊'];
+                    return { sequence: emojis, answer: '🍊', hint: 'Apple, Orange, Orange repeats', options: ['🍎', '🍊', '🍋', '🍇'] };
+                },
+                type: 'emoji'
+            },
+
+            // HARD PATTERNS (13-18)
+            { 
+                difficulty: 'hard', 
+                generate: () => {
+                    const start = Math.floor(Math.random() * 2) + 2;
+                    const seq = [start, start * 3, start * 3 + 2, (start * 3 + 2) * 3];
+                    return { sequence: seq, answer: (start * 3 + 2) * 3 + 2, hint: 'Multiply by 3, then add 2, repeat' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'hard', 
+                generate: () => {
+                    const seq = [1, 4, 9, 16];
+                    return { sequence: seq, answer: 25, hint: 'Perfect squares: 1², 2², 3², 4²...' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'hard', 
+                generate: () => {
+                    const emojis = ['🔼', '🔽', '🔼', '🔼', '🔽'];
+                    return { sequence: emojis, answer: '🔼', hint: 'Up, Down, Up, Up, Down, Up...', options: ['🔼', '🔽', '◀️', '▶️'] };
+                },
+                type: 'emoji'
+            },
+            { 
+                difficulty: 'hard', 
+                generate: () => {
+                    const seq = [2, 3, 5, 7];
+                    return { sequence: seq, answer: 11, hint: 'Prime numbers only' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'hard', 
+                generate: () => {
+                    const start = 1;
+                    const seq = [start, start * 1, start * 1 * 2, start * 1 * 2 * 3];
+                    return { sequence: seq, answer: start * 1 * 2 * 3 * 4, hint: 'Factorial: 1!, 2!, 3!, 4!...' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'hard', 
+                generate: () => {
+                    const seq = [1, 3, 6, 10];
+                    return { sequence: seq, answer: 15, hint: 'Triangular numbers: 1, 1+2, 1+2+3, 1+2+3+4...' };
+                },
+                type: 'number'
+            },
+
+            // EXPERT PATTERNS (19-25)
+            { 
+                difficulty: 'expert', 
+                generate: () => {
+                    const seq = [1, 1, 2, 3, 5];
+                    return { sequence: seq, answer: 8, hint: 'Fibonacci: each = sum of previous two' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'expert', 
+                generate: () => {
+                    const emojis = ['🌕', '🌖', '🌗', '🌘', '🌑'];
+                    return { sequence: emojis, answer: '🌒', hint: 'Moon phases in order', options: ['🌒', '🌓', '🌔', '🌕'] };
+                },
+                type: 'emoji'
+            },
+            { 
+                difficulty: 'expert', 
+                generate: () => {
+                    const seq = [1, 2, 6, 24];
+                    return { sequence: seq, answer: 120, hint: 'Factorial: n! = n × (n-1) × ... × 1' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'expert', 
+                generate: () => {
+                    const seq = [2, 6, 12, 20];
+                    return { sequence: seq, answer: 30, hint: 'Pattern: n × (n+1)' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'expert', 
+                generate: () => {
+                    const emojis = ['🔴', '🟠', '🟡', '🟢', '🔵'];
+                    return { sequence: emojis, answer: '🟣', hint: 'Rainbow color order', options: ['🟣', '⚫', '⚪', '🟤'] };
+                },
+                type: 'emoji'
+            },
+            { 
+                difficulty: 'expert', 
+                generate: () => {
+                    const seq = [3, 6, 11, 18];
+                    return { sequence: seq, answer: 27, hint: 'Add increasing odd numbers: +3, +5, +7, +9...' };
+                },
+                type: 'number'
+            },
+            { 
+                difficulty: 'expert', 
+                generate: () => {
+                    const seq = [1, 4, 10, 20];
+                    return { sequence: seq, answer: 35, hint: 'Pattern: sum of first n triangular numbers' };
+                },
+                type: 'number'
+            }
+        ];
+
+        function generatePattern() {
+            if (currentPatternNum > patterns.length) {
+                currentPatternNum = patterns.length;
+            }
+            
+            const patternDef = patterns[currentPatternNum - 1];
+            currentPattern = patternDef.generate();
+            currentPattern.difficulty = patternDef.difficulty;
+            currentPattern.type = patternDef.type;
+            
+            if (patternDef.type === 'emoji' && currentPattern.options) {
+                currentPattern.predefinedOptions = currentPattern.options;
+            }
+            
+            return currentPattern;
+        }
+
+        function displayPattern() {
+            const pattern = generatePattern();
+            const sequenceContainer = document.getElementById('patternSequence');
+            sequenceContainer.innerHTML = '';
+
+            // Update difficulty badge
+            const badge = document.getElementById('difficultyBadge');
+            badge.textContent = pattern.difficulty.toUpperCase();
+            badge.className = `difficulty-badge ${pattern.difficulty}`;
+
+            pattern.sequence.forEach(item => {
+                const div = document.createElement('div');
+                div.className = `pattern-item ${pattern.type === 'emoji' ? 'emoji' : ''}`;
+                div.textContent = item;
+                sequenceContainer.appendChild(div);
+            });
+
+            const questionMark = document.createElement('div');
+            questionMark.className = 'pattern-item question';
+            questionMark.textContent = '?';
+            sequenceContainer.appendChild(questionMark);
+
+            generateOptions(pattern);
+            isAnswered = false;
+            wrongAttempts = 0;
+            patternLives = 3;
+            updatePatternLives();
+            document.getElementById('hintBox').classList.remove('show');
+        }
+
+        function generateOptions(pattern) {
+            let options;
+            
+            if (pattern.predefinedOptions) {
+                options = [...pattern.predefinedOptions];
+            } else {
+                options = [pattern.answer];
+                
+                // Generate 3 wrong answers
+                const maxAttempts = 20;
+                let attempts = 0;
+                while (options.length < 4 && attempts < maxAttempts) {
+                    attempts++;
+                    let wrongAnswer;
+                    
+                    if (pattern.answer < 50) {
+                        const offset = Math.floor(Math.random() * 20) - 10;
+                        wrongAnswer = pattern.answer + offset;
+                    } else {
+                        const offset = Math.floor(Math.random() * 100) - 50;
+                        wrongAnswer = pattern.answer + offset;
+                    }
+                    
+                    if (wrongAnswer !== pattern.answer && !options.includes(wrongAnswer) && wrongAnswer > 0) {
+                        options.push(wrongAnswer);
+                    }
+                }
+                
+                // Fill remaining slots if needed
+                while (options.length < 4) {
+                    const filler = Math.floor(Math.random() * 100) + 1;
+                    if (!options.includes(filler)) {
+                        options.push(filler);
+                    }
+                }
+            }
+
+            // Shuffle options
+            options.sort(() => Math.random() - 0.5);
+
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                button.textContent = option;
+                button.onclick = () => checkAnswer(option, button);
+                container.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selected, button) {
+            if (isAnswered) return;
+
+            const allButtons = document.querySelectorAll('.option-button');
+            
+            if (selected === currentPattern.answer) {
+                isAnswered = true;
+                allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+                button.classList.add('correct');
+                
+                // Calculate points based on difficulty and lives remaining
+                let points = 10;
+                if (currentPattern.difficulty === 'easy') points = 10;
+                else if (currentPattern.difficulty === 'medium') points = 20;
+                else if (currentPattern.difficulty === 'hard') points = 30;
+                else if (currentPattern.difficulty === 'expert') points = 50;
+                
+                // Bonus for lives remaining
+                points += (patternLives - 1) * 5;
+                
+                score += points;
+                streak++;
+                
+                showMessage(`🎉 Correct! +${points} points!`, 'success');
+                document.getElementById('nextButton').classList.remove('hidden');
+                updateStats();
+            } else {
+                button.classList.add('wrong');
+                wrongAttempts++;
+                patternLives--;
+                updatePatternLives();
+                
+                // Show hint after 2 wrong attempts (1 life remaining)
+                if (wrongAttempts >= 2 && patternLives > 0) {
+                    const hintBox = document.getElementById('hintBox');
+                    hintBox.textContent = '💡 Hint: ' + currentPattern.hint;
+                    hintBox.classList.add('show');
+                }
+                
+                if (patternLives <= 0) {
+                    isAnswered = true;
+                    allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+                    
+                    // Show correct answer
+                    allButtons.forEach(btn => {
+                        if (btn.textContent == currentPattern.answer) {
+                            btn.classList.add('correct');
+                        }
+                    });
+
+                    streak = 0;
+                    if (score > bestScore) {
+                        bestScore = score;
+                    }
+                    
+                    showMessage(`💔 Pattern Failed! The answer was ${currentPattern.answer}. Score: ${score}`, 'game-over');
+                    document.getElementById('nextButton').classList.add('hidden');
+                    document.getElementById('resetButton').classList.remove('hidden');
+                    updateStats();
+                } else {
+                    showMessage(`❌ Wrong! ${patternLives} ${patternLives === 1 ? 'try' : 'tries'} left for this pattern`, 'error');
+                    
+                    setTimeout(() => {
+                        button.classList.remove('wrong');
+                    }, 500);
+                }
+            }
+        }
+
+        function updatePatternLives() {
+            const hearts = '❤️ '.repeat(patternLives) + '🖤 '.repeat(3 - patternLives);
+            document.getElementById('patternLives').textContent = hearts.trim();
+        }
+
+        function showMessage(text, type) {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = text;
+            messageBox.className = `message-box show ${type}`;
+        }
+
+        function updateStats() {
+            document.getElementById('patternNumber').textContent = currentPatternNum;
+            document.getElementById('score').textContent = score;
+            document.getElementById('streak').textContent = streak;
+            document.getElementById('bestScore').textContent = bestScore;
+        }
+
+        function nextPattern() {
+            if (currentPatternNum >= patterns.length) {
+                showMessage(`🎊 Congratulations! You completed all ${patterns.length} patterns! Final Score: ${score}`, 'game-over');
+                document.getElementById('nextButton').classList.add('hidden');
+                document.getElementById('resetButton').classList.remove('hidden');
+                if (score > bestScore) {
+                    bestScore = score;
+                    updateStats();
+                }
+                return;
+            }
+            
+            currentPatternNum++;
+            document.getElementById('nextButton').classList.add('hidden');
+            document.getElementById('messageBox').classList.remove('show');
+            
+            const allButtons = document.querySelectorAll('.option-button');
+            allButtons.forEach(btn => {
+                btn.classList.remove('correct', 'wrong');
+                btn.style.pointerEvents = 'auto';
+            });
+            
+            displayPattern();
+            updateStats();
+        }
+
+        function resetGame() {
+            currentPatternNum = 1;
+            score = 0;
+            streak = 0;
+            patternLives = 3;
+            wrongAttempts = 0;
+            
+            updateStats();
+            updatePatternLives();
+            
+            document.getElementById('messageBox').classList.remove('show');
+            document.getElementById('resetButton').classList.add('hidden');
+            document.getElementById('nextButton').classList.add('hidden');
+            document.getElementById('hintBox').classList.remove('show');
+            
+            displayPattern();
+        }
+
+        // Initialize game
+        displayPattern();
+        updateStats();
+    </script>
+</body>
+</html>
