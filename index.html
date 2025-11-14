@@ -66,7 +66,7 @@
 
         .stats-container {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
             margin-bottom: 30px;
         }
@@ -327,11 +327,17 @@
             }
         }
 
-        .pattern-lives {
+        .game-lives {
             text-align: center;
             font-size: 1.5rem;
             margin-bottom: 20px;
             color: #bfdbfe;
+        }
+
+        .lives-label {
+            font-size: 0.9rem;
+            color: #93c5fd;
+            margin-bottom: 5px;
         }
     </style>
 </head>
@@ -356,21 +362,16 @@
                 <div class="stat-label">Score</div>
                 <div class="stat-value" id="score">0</div>
             </div>
-            <div class="stat-box">
-                <div class="stat-label">Streak</div>
-                <div class="stat-value" id="streak">0</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">Best</div>
-                <div class="stat-value" id="bestScore">0</div>
-            </div>
         </div>
 
         <div style="text-align: center;">
             <span class="difficulty-badge" id="difficultyBadge">EASY</span>
         </div>
 
-        <div class="pattern-lives" id="patternLives">❤️ ❤️ ❤️</div>
+        <div class="game-lives">
+            <div class="lives-label">Lives Remaining</div>
+            <div id="livesDisplay">❤️ ❤️ ❤️</div>
+        </div>
 
         <div class="hint-box" id="hintBox"></div>
 
@@ -393,10 +394,7 @@
     <script>
         let currentPatternNum = 1;
         let score = 0;
-        let streak = 0;
-        let bestScore = 0;
-        let patternLives = 3;
-        let wrongAttempts = 0;
+        let totalLives = 3;
         let currentPattern = null;
         let isAnswered = false;
 
@@ -667,9 +665,6 @@
 
             generateOptions(pattern);
             isAnswered = false;
-            wrongAttempts = 0;
-            patternLives = 3;
-            updatePatternLives();
             document.getElementById('hintBox').classList.remove('show');
         }
 
@@ -725,6 +720,11 @@
             });
         }
 
+        function updateLivesDisplay() {
+            const hearts = '❤️ '.repeat(totalLives) + '🖤 '.repeat(3 - totalLives);
+            document.getElementById('livesDisplay').textContent = hearts.trim();
+        }
+
         function checkAnswer(selected, button) {
             if (isAnswered) return;
 
@@ -735,36 +735,29 @@
                 allButtons.forEach(btn => btn.style.pointerEvents = 'none');
                 button.classList.add('correct');
                 
-                // Calculate points based on difficulty and lives remaining
+                // Calculate points based on difficulty
                 let points = 10;
                 if (currentPattern.difficulty === 'easy') points = 10;
                 else if (currentPattern.difficulty === 'medium') points = 20;
                 else if (currentPattern.difficulty === 'hard') points = 30;
                 else if (currentPattern.difficulty === 'expert') points = 50;
                 
-                // Bonus for lives remaining
-                points += (patternLives - 1) * 5;
-                
                 score += points;
-                streak++;
                 
                 showMessage(`🎉 Correct! +${points} points!`, 'success');
                 document.getElementById('nextButton').classList.remove('hidden');
                 updateStats();
             } else {
                 button.classList.add('wrong');
-                wrongAttempts++;
-                patternLives--;
-                updatePatternLives();
+                totalLives--;
+                updateLivesDisplay();
                 
-                // Show hint after 2 wrong attempts (1 life remaining)
-                if (wrongAttempts >= 2 && patternLives > 0) {
-                    const hintBox = document.getElementById('hintBox');
-                    hintBox.textContent = '💡 Hint: ' + currentPattern.hint;
-                    hintBox.classList.add('show');
-                }
+                // Show hint when a life is lost
+                const hintBox = document.getElementById('hintBox');
+                hintBox.textContent = '💡 Hint: ' + currentPattern.hint;
+                hintBox.classList.add('show');
                 
-                if (patternLives <= 0) {
+                if (totalLives <= 0) {
                     isAnswered = true;
                     allButtons.forEach(btn => btn.style.pointerEvents = 'none');
                     
@@ -775,28 +768,18 @@
                         }
                     });
 
-                    streak = 0;
-                    if (score > bestScore) {
-                        bestScore = score;
-                    }
-                    
-                    showMessage(`💔 Pattern Failed! The answer was ${currentPattern.answer}. Score: ${score}`, 'game-over');
+                    showMessage(`💔 Game Over! You ran out of lives. The answer was ${currentPattern.answer}. Final Score: ${score}`, 'game-over');
                     document.getElementById('nextButton').classList.add('hidden');
                     document.getElementById('resetButton').classList.remove('hidden');
                     updateStats();
                 } else {
-                    showMessage(`❌ Wrong! ${patternLives} ${patternLives === 1 ? 'try' : 'tries'} left for this pattern`, 'error');
+                    showMessage(`❌ Wrong! Lost a life. ${totalLives} ${totalLives === 1 ? 'life' : 'lives'} remaining`, 'error');
                     
                     setTimeout(() => {
                         button.classList.remove('wrong');
                     }, 500);
                 }
             }
-        }
-
-        function updatePatternLives() {
-            const hearts = '❤️ '.repeat(patternLives) + '🖤 '.repeat(3 - patternLives);
-            document.getElementById('patternLives').textContent = hearts.trim();
         }
 
         function showMessage(text, type) {
@@ -808,8 +791,6 @@
         function updateStats() {
             document.getElementById('patternNumber').textContent = currentPatternNum;
             document.getElementById('score').textContent = score;
-            document.getElementById('streak').textContent = streak;
-            document.getElementById('bestScore').textContent = bestScore;
         }
 
         function nextPattern() {
@@ -817,10 +798,6 @@
                 showMessage(`🎊 Congratulations! You completed all ${patterns.length} patterns! Final Score: ${score}`, 'game-over');
                 document.getElementById('nextButton').classList.add('hidden');
                 document.getElementById('resetButton').classList.remove('hidden');
-                if (score > bestScore) {
-                    bestScore = score;
-                    updateStats();
-                }
                 return;
             }
             
@@ -841,12 +818,10 @@
         function resetGame() {
             currentPatternNum = 1;
             score = 0;
-            streak = 0;
-            patternLives = 3;
-            wrongAttempts = 0;
+            totalLives = 3;
             
             updateStats();
-            updatePatternLives();
+            updateLivesDisplay();
             
             document.getElementById('messageBox').classList.remove('show');
             document.getElementById('resetButton').classList.add('hidden');
@@ -859,6 +834,7 @@
         // Initialize game
         displayPattern();
         updateStats();
+        updateLivesDisplay();
     </script>
 </body>
 </html>
